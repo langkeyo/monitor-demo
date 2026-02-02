@@ -12,7 +12,7 @@ export default async function handler(request, response) {
     try {
       // 1. 把这一条日志存进去（用 lpush 存进一个名为 "all_logs" 的列表里）
       // lpush 就像是往数组头部赛一个东西
-      await kv.lpush('all_logs', JSON.stringify(data))
+      await kv.lpush('all_logs', JSON.stringify({ ...data, id: logId }))
 
       // 2. 为了防止数据爆炸，我们只保留最近的 100 条
       await kv.ltrim('all_logs', 0, 99)

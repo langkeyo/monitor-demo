@@ -12,6 +12,12 @@
   <body>
     <div class="container">
       <div class="controls">
+        <button
+          onclick="clearCloudLogs()"
+          style="background-color: #ff4d4f; color: #fff"
+        >
+          🧨 清空云端数据
+        </button>
         <button onclick="makeError()">点我触发一个 JS 错误</button>
         <button onclick="makeResourceError()">点我触发图片 404 错误</button>
         <button onclick="makePromiseError()">点我触发 Promise 错误</button>
@@ -20,6 +26,15 @@
       </div>
       <div id="chart-main"></div>
     </div>
+
+    <script>
+      async function clearCloudLogs() {
+        if (confirm('确定要删除云端所有监控记录吗？此操作不可逆！')) {
+          await fetch('/api/clear-logs')
+          location.reload()
+        }
+      }
+    </script>
 
     <!-- 模块化 -->
     <script type="module">
@@ -38,30 +53,12 @@
       Monitor.start({
         onReport: onReportReceived
       })
-
+      // index.html 里的 renderLogs 简化版
       function renderLogs(data, isHistory) {
         const list = document.getElementById('log-list')
-        if (!list) return
-
         const item = document.createElement('div')
-        item.className = 'error-item'
-        // 根据类型给颜色
-        const colorMap = {
-          页面加载性能: '#1890ff',
-          JS错误: '#ff4d4f',
-          资源错误: '#faad14',
-          Promise错误: '#722ed1'
-        }
-        item.style.color = isHistory ? '#999' : colorMap[data.type] || '#ccc'
 
-        const pathStr =
-          data.path && data.path.length > 0 ? data.path.join(' -> ') : '无'
-
-        item.innerHTML = `
-    ${isHistory ? '[历史记录] ' : ''}[${data.time}] 🚨 ${data.type}<br>
-    内容: ${data.msg || data.url || ''}<br>
-    <b>操作路径：${pathStr}</b>
-  `
+        // 统一管理类名
         const typeClass =
           data.type === 'JS错误'
             ? 'item-js-error'
@@ -70,11 +67,20 @@
               : data.tag === 'Rage-Click'
                 ? 'item-rage'
                 : ''
-        item.className = `error-item ${typeClass}`
+        const historyClass = isHistory ? 'is-history' : ''
 
+        item.className = `error-item ${typeClass} ${historyClass}`
+
+        const pathStr =
+          data.path && data.path.length > 0 ? data.path.join(' -> ') : '无'
+
+        item.innerHTML = `
+        [${data.time}] 🚨 ${data.type}<br>
+        内容: ${data.msg || data.url || ''}<br>
+        <small>操作路径：${pathStr}</small>
+    `
         list.prepend(item)
       }
-
       // 全局挂在一个函数给按钮用
       window.renderDashboard = renderChart
       // 初始渲染一次

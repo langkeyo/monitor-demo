@@ -100,19 +100,19 @@ export function handleReport(data, isHistory = false) {
     data.time = data.time || new Date().toLocaleTimeString()
     // 双保险（存在本地）
     storage.save(data)
-  }
 
-  //【核心】上报到远程 Serverless 接口
-  fetch('/api/report', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(data) // 把报错对象转成字符串发出去
-  })
-    .then((res) => res.json())
-    .then((data) => console.log('云端响应：', data.message))
-    .catch((err) => console.error('上报云端失败：', err))
+    //【核心】上报到远程 Serverless 接口
+    fetch('/api/report', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data) // 把报错对象转成字符串发出去
+    })
+      .then((res) => res.json())
+      .then((data) => console.log('云端响应：', data.message))
+      .catch((err) => console.error('上报云端失败：', err))
+  }
 
   //【关键】如果有回调，就把数据传出去
   if (typeof reportHandler === 'function') {
