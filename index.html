@@ -1,0 +1,107 @@
+<!-- index.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>进阶监控系统 v2.0</title>
+    <!-- 引入 ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="controls">
+        <button onclick="makeError()">点我触发一个 JS 错误</button>
+        <button onclick="makeResourceError()">点我触发图片 404 错误</button>
+        <button onclick="makePromiseError()">点我触发 Promise 错误</button>
+        <button onclick="renderDashboard()">✨ 刷新可视化报表</button>
+        <div id="log-list"></div>
+      </div>
+      <div id="chart-main"></div>
+    </div>
+
+    <!-- 模块化 -->
+    <script type="module">
+      import Monitor from './js/monitor/index.js'
+      import { renderChart } from './js/visualizer.js'
+
+      // 在这里定义：收到监控数据后做什么
+      const onReportReceived = (data, isHistory) => {
+        // 1. 渲染日志列表
+        renderLogs(data, isHistory)
+        // 2. 刷新图表
+        renderChart()
+      }
+
+      // 启动时把这个 “决定权” 传给 SDK
+      Monitor.start({
+        onReport: onReportReceived
+      })
+
+      function renderLogs(data, isHistory) {
+        const list = document.getElementById('log-list')
+        if (!list) return
+
+        const item = document.createElement('div')
+        item.className = 'error-item'
+        // 根据类型给颜色
+        const colorMap = {
+          页面加载性能: '#1890ff',
+          JS错误: '#ff4d4f',
+          资源错误: '#faad14',
+          Promise错误: '#722ed1'
+        }
+        item.style.color = isHistory ? '#999' : colorMap[data.type] || '#ccc'
+
+        const pathStr =
+          data.path && data.path.length > 0 ? data.path.join(' -> ') : '无'
+
+        item.innerHTML = `
+    ${isHistory ? '[历史记录] ' : ''}[${data.time}] 🚨 ${data.type}<br>
+    内容: ${data.msg || data.url || ''}<br>
+    <b>操作路径：${pathStr}</b>
+  `
+        const typeClass =
+          data.type === 'JS错误'
+            ? 'item-js-error'
+            : data.type === '页面加载性能'
+              ? 'item-perf'
+              : data.tag === 'Rage-Click'
+                ? 'item-rage'
+                : ''
+        item.className = `error-item ${typeClass}`
+
+        list.prepend(item)
+      }
+
+      // 全局挂在一个函数给按钮用
+      window.renderDashboard = renderChart
+      // 初始渲染一次
+      window.onload = renderChart
+
+      // --- 业务代码（故意制造错误） ---
+      window.makeError = function makeError() {
+        // 这里故意调用一个不存在的变量
+        console.log(myUndefinedVariable)
+      }
+
+      // 业务代码：触发资源错误
+      window.makeResourceError = function makeResourceError() {
+        const img = new Image()
+        img.style.marginTop = '8px'
+        img.style.borderRadius = '8px'
+        img.src = ' https://this-is-a-404-image.jpg' // 一个不存在的图片
+        document.body.appendChild(img)
+      }
+
+      // 业务代码：触发异步报错
+      window.makePromiseError = function makePromiseError() {
+        return new Promise((resolve, reject) => {
+          // 模拟一个异步操作失败
+          reject('服务器返回：403 无权限')
+        })
+      }
+    </script>
+  </body>
+</html>

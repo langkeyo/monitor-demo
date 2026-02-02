@@ -1,0 +1,52 @@
+/* css/style.css */
+/* 简单布个局：左边操作，左边报表 */
+.container {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+}
+#chart-main {
+  width: 500px;
+  height: 400px;
+  border: 1px solid #eee;
+}
+#log-list {
+  margin-top: 20px;
+  flex: 1;
+  height: 400px;
+  overflow: auto;
+  background-color: #333;
+  color: #fff;
+}
+/* 日志项卡片化 */
+.error-item {
+  background-color: #444;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  padding: 12px;
+  border-left: 4px solid #666; /* 默认灰色左边框 */
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* 根据类型变色 */
+.item-js-error {
+  border-left-color: #ff4d4f;
+}
+.item-perf {
+  border-left-color: #1890ff;
+}
+.item-rage {
+  border-left-color: #faad14;
+  background-color: #5a4512; /* 愤怒点击用橘黄色 */
+}
+
+/* 路径美化 */
+.action-pah {
+  display: inline-block;
+  background-color: #222;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #aaa;
+  margin-top: 5px;
+}
