@@ -11,7 +11,15 @@
   </head>
   <body>
     <div class="container">
+      <div class="ai-box">
+        <button onclick="inspectData()">开始检测并打印数据结构</button>
+        <video id="ai-video" autoplay muted width="240" height="180"></video>
+        <div id="ai-status" style="font-size: 12px; color: #0f0">
+          等待 AI 唤醒...
+        </div>
+      </div>
       <div class="controls">
+        <button onclick="searchBluetooth()">探测周围的蓝牙信号</button>
         <button
           onclick="clearCloudLogs()"
           style="background-color: #ff4d4f; color: #fff"
@@ -26,6 +34,13 @@
       </div>
       <div id="chart-main"></div>
     </div>
+
+    <!-- 引入全局库（生成 window.faceapi） -->
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+
+    <!-- <script type="module" src="./index.js"></script> -->
+
+    <script type="module" src="./bluetooth.js"></script>
 
     <script>
       async function clearCloudLogs() {

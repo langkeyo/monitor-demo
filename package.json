@@ -1,5 +1,9 @@
 {
 	"dependencies": {
-		"@vercel/kv": "^3.0.0"
+		"@vercel/kv": "^3.0.0",
+		"@vladmandic/face-api": "^1.7.15"
+	},
+	"devDependencies": {
+		"@types/web-bluetooth": "^0.0.21"
 	}
 }
