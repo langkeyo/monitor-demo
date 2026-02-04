@@ -1,0 +1,139 @@
+<!-- index.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>进阶监控系统 v2.0</title>
+    <!-- 引入 ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="ai-box">
+        <button onclick="inspectData()">开始检测并打印数据结构</button>
+        <video id="ai-video" autoplay muted width="240" height="180"></video>
+        <div id="ai-status" style="font-size: 12px; color: #0f0">
+          等待 AI 唤醒...
+        </div>
+      </div>
+      <div class="controls">
+        <button id="btn-bluetooth" onclick="searchBluetooth()">
+          探测周围的蓝牙信号
+        </button>
+        <button
+          id="btn-clear-cloud"
+          onclick="clearCloudLogs()"
+          style="background-color: #ff4d4f; color: #fff"
+        >
+          🧨 清空云端数据
+        </button>
+        <button id="btn-error-js" onclick="makeError()">
+          点我触发一个 JS 错误
+        </button>
+        <button id="btn-error-not-found" onclick="makeResourceError()">
+          点我触发图片 404 错误
+        </button>
+        <button id="btn-error-promise" onclick="makePromiseError()">
+          点我触发 Promise 错误
+        </button>
+        <button id="btn-refresh" onclick="renderDashboard()">
+          ✨ 刷新可视化报表
+        </button>
+        <div id="log-list"></div>
+      </div>
+      <div id="chart-main" style="width: 100%; height: 300px"></div>
+    </div>
+
+    <!-- 引入全局库（生成 window.faceapi） -->
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+
+    <!-- <script type="module" src="./face-api-demo.js"></script> -->
+
+    <script type="module" src="./bluetooth.js"></script>
+
+    <script>
+      async function clearCloudLogs() {
+        if (confirm('确定要删除云端所有监控记录吗？此操作不可逆！')) {
+          await fetch('/api/clear-logs')
+          location.reload()
+        }
+      }
+    </script>
+
+    <!-- 模块化 -->
+    <script type="module">
+      import Monitor from './js/monitor/index.js'
+      import { renderChart } from './js/visualizer.js'
+
+      // 在这里定义：收到监控数据后做什么
+      const onReportReceived = (data, isHistory) => {
+        // 1. 渲染日志列表
+        renderLogs(data, isHistory)
+        // 2. 刷新图表
+        renderChart()
+      }
+
+      // 启动时把这个 “决定权” 传给 SDK
+      Monitor.start({
+        onReport: onReportReceived
+      })
+      // index.html 里的 renderLogs 简化版
+      function renderLogs(data, isHistory) {
+        const list = document.getElementById('log-list')
+        const item = document.createElement('div')
+
+        // 统一管理类名
+        const typeClass =
+          data.type === 'JS错误'
+            ? 'item-js-error'
+            : data.type === '页面加载性能'
+              ? 'item-perf'
+              : data.tag === 'Rage-Click'
+                ? 'item-rage'
+                : ''
+        const historyClass = isHistory ? 'is-history' : ''
+
+        item.className = `error-item ${typeClass} ${historyClass}`
+
+        const pathStr =
+          data.path && data.path.length > 0 ? data.path.join(' -> ') : '无'
+
+        item.innerHTML = `
+        [${data.time}] 🚨 ${data.type}<br>
+        内容: ${data.msg || data.url || ''}<br>
+        <small>操作路径：${pathStr}</small>
+    `
+        list.prepend(item)
+      }
+      // 全局挂在一个函数给按钮用
+      window.renderDashboard = renderChart
+      // 初始渲染一次
+      window.onload = renderChart
+
+      // --- 业务代码（故意制造错误） ---
+      window.makeError = function makeError() {
+        // 这里故意调用一个不存在的变量
+        console.log(myUndefinedVariable)
+      }
+
+      // 业务代码：触发资源错误
+      window.makeResourceError = function makeResourceError() {
+        const img = new Image()
+        img.style.marginTop = '8px'
+        img.style.borderRadius = '8px'
+        img.src = ' https://this-is-a-404-image.jpg' // 一个不存在的图片
+        document.body.appendChild(img)
+      }
+
+      // 业务代码：触发异步报错
+      window.makePromiseError = function makePromiseError() {
+        return new Promise((resolve, reject) => {
+          // 模拟一个异步操作失败
+          reject('服务器返回：403 无权限')
+        })
+      }
+    </script>
+  </body>
+</html>

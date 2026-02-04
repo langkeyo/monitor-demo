@@ -4,6 +4,7 @@ import { handleReport } from './tracker.js'
 export function initPerf(_options) {
   // 页面性能监控（看网页加载到底花了多久）
   window.addEventListener('load', () => {
+    console.log('hello')
     // 这里用 setTimeout 是为了确保数据已经生成
     setTimeout(() => {
       const [entry] = performance.getEntriesByType('navigation')

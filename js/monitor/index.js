@@ -9,11 +9,17 @@ export default {
    * @param {any} options
    */
   start(options) {
-    console.log('🚀 监控系统已启动...')
+    console.log('🚀 监控系统已启动...', options)
     initTracker(options.onReport)
     initPerf(options.onReport)
 
     // 2. 传入对应的 DOM ID 启动 AI
-    initAI('ai-video', 'ai-status')
+    if (window.requestIdleCallback) {
+      window.requestIdleCallback(() => {
+        initAI('ai-video', 'ai-status')
+      })
+    } else {
+      setTimeout(() => initAI('ai-video', 'ai-status'), 5000)
+    }
   }
 }

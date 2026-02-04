@@ -1,5 +1,6 @@
 // js/monitor/storage.js
-const STORAGE_KEY = 'MONITOR_LOGS'
+const PREFIX = 'SENTINEL_'
+const STORAGE_KEY = PREFIX + 'MONITOR_LOGS'
 
 export const storage = {
   save(log) {

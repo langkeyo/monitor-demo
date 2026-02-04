@@ -7,6 +7,7 @@ export const userActions = []
 
 export function initTracker(callback) {
   reportHandler = callback
+  fetchHistoryLogs()
 
   // 1. JS 错误
   window.onerror = (msg, _url, line) => {
@@ -91,6 +92,24 @@ export function initTracker(callback) {
       console.error('拉去云端日志失败', error)
     }
   })
+}
+
+async function fetchHistoryLogs() {
+  try {
+    // ✨ 这里的路径也要注意！微前端下建议写绝对路径，防止 404
+    const API_BASE = 'http://localhost:3001' // 你的 Vercel Serverless 地址
+
+    console.log('开始同步云端历史记录...')
+    const res = await fetch(`${API_BASE}/api/get-logs`)
+    const cloudLogs = await res.json()
+
+    cloudLogs.forEach((logStr) => {
+      const log = typeof logStr === 'string' ? JSON.parse(logStr) : logStr
+      handleReport(log, true)
+    })
+  } catch (error) {
+    console.error('拉取云端日志失败', error)
+  }
 }
 
 export function handleReport(data, isHistory = false) {

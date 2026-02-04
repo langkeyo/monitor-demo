@@ -1,7 +1,9 @@
 // js/monitor/ai.js
+import { qiankunWindow } from 'vite-plugin-qiankun/dist/helper.js'
+import * as faceapi from '@vladmandic/face-api'
 import { handleReport } from './tracker.js'
 
-const faceapi = window.faceapi
+const isQiankun = qiankunWindow.__POWERED_BY_QIANKUN__
 
 /**
  * 核心逻辑：从 AI 返回的复杂对象中，提取最有价值的信息
@@ -34,15 +36,15 @@ function analyzeEmotion(expressions) {
  * @param {string} statusDomId
  */
 export async function initAI(videoDomId, statusDomId) {
-  /** @type {HTMLVideoElement} */
-  const video = /** @type {HTMLVideoElement} */ (
-    document.getElementById(videoDomId)
-  )
-  /** @type {HTMLElement} */
-  const status = /** @type {HTMLElement} */ (
-    document.getElementById(statusDomId)
-  )
-  const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/'
+  const video = document.getElementById(videoDomId)
+  const status = document.getElementById(statusDomId)
+
+  // ✨ 关键点：动态计算模型存放路径
+  // 如果是 qiankun 环境，必须指向子应用的绝对路径（localhost:5174）
+  // 如果是独立运行，则使用相对路径
+  const SUB_APP_PUBLIC_PATH = isQiankun ? 'http://localhost:5174/monitor' : ''
+
+  const MODEL_URL = `${SUB_APP_PUBLIC_PATH}/models/`
 
   // 加载模型
   await Promise.all([
